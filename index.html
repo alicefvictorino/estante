@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estante</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-pessoa="juan">
+  <div class="es-pagina">
+    <header class="es-topo">
+      <h1 class="es-titulo-site">Estante</h1>
+      <div class="es-topo-controles">
+        <div class="es-abas" role="tablist" aria-label="Estante de quem">
+          <button class="es-aba" role="tab" id="aba-alice" data-pessoa="alice" aria-controls="conteudo">Alice</button>
+          <button class="es-aba" role="tab" id="aba-juan" data-pessoa="juan" aria-controls="conteudo">Juan</button>
+        </div>
+        <label class="es-quem">
+          Você é
+          <select id="quem-sou">
+            <option value="alice">Alice</option>
+            <option value="juan">Juan</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <main id="conteudo" role="tabpanel"></main>
+
+    <footer class="es-rodape">
+      <button id="restaurar" class="es-botao" type="button">Restaurar dados de exemplo</button>
+    </footer>
+  </div>
+
+  <dialog id="dialogo-colecao" class="es-dialogo">
+    <form id="form-colecao" method="dialog">
+      <h2 class="es-titulo-secao">Adicionar coleção</h2>
+      <label>Nome da série
+        <input name="nome" required placeholder="JoJo's Bizarre Adventure">
+      </label>
+      <label>Edição
+        <input name="edicao" placeholder="Edição brasileira · Panini">
+      </label>
+      <label>Partes, uma por linha (nome = volumes)
+        <textarea name="partes" rows="5" required placeholder="Phantom Blood = 3&#10;Battle Tendency = 4"></textarea>
+      </label>
+      <p class="es-dica">Sem partes? Escreva uma linha só, com o nome da série.</p>
+      <div class="es-dialogo-acoes">
+        <button class="es-botao" type="button" id="cancelar-colecao">Cancelar</button>
+        <button class="es-botao es-botao-primario" type="submit">Adicionar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
