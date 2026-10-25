@@ -272,7 +272,8 @@ button.es-lombada.tem:focus-visible { box-shadow: var(--sombra-lombada), var(--s
 .es-chip {
   min-width: 28px;
   padding: 2px 6px;
-  border: 2px dashed var(--hue);
+  background: var(--superficie-alta);
+  border: 1px solid var(--hue);
   border-radius: var(--raio-sm);
   color: var(--hue);
   text-align: center;

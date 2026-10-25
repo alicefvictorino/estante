@@ -2,19 +2,17 @@
 
 const CHAVE = 'estante:v2';
 const NOMES = { alice: 'Alice', juan: 'Juan' };
-const ARTIGO = { alice: 'à', juan: 'ao' };
 
 // Contagem de volumes da edição Panini (Brasil); dá pra ajustar aqui ou recriar a coleção.
 function jojo(posse) {
   const partes = [
     ['Phantom Blood', 3], ['Battle Tendency', 4], ['Stardust Crusaders', 10],
     ['Diamond is Unbreakable', 12], ['Golden Wind', 10], ['Stone Ocean', 11],
-    ['Steel Ball Run', 24], ['JoJolion', 27],
   ];
   return {
     id: 'jojo',
     nome: "JoJo's Bizarre Adventure",
-    edicao: 'Edição brasileira · Panini',
+    edicao: 'Panini',
     partes: partes.map(([titulo, volumes], i) => ({
       titulo,
       volumes,
@@ -24,9 +22,25 @@ function jojo(posse) {
   };
 }
 
+// Coleção sem partes: uma prateleira só.
+function serie(id, nome, volumes, tem, editora = 'Panini') {
+  return {
+    id,
+    nome,
+    edicao: editora,
+    partes: [{ titulo: '', volumes, coleciona: true, tem }],
+  };
+}
+
 const EXEMPLO = {
-  // Juan coleciona até a parte 6.
-  juan: [jojo(['todos', 'todos', 'todos', [1, 2, 6], [], [8, 9, 10]])],
+  juan: [
+    // Coleciona até a parte 6.
+    jojo(['todos', 'todos', 'todos', [1, 2, 6], [], [8, 9, 10]]),
+    serie('slam-dunk', 'Slam Dunk', 24, [1]),
+    serie('death-note', 'Death Note', 6, [], 'JBC'),
+    // Ainda não sabe se vai continuar.
+    serie('vagabond', 'Vagabond', 37, [1, 2, 3, 4, 5]),
+  ],
   alice: [],
 };
 
@@ -41,9 +55,34 @@ function intervalo(n) {
 function carregar() {
   try {
     const salvo = localStorage.getItem(CHAVE);
-    if (salvo) return JSON.parse(salvo);
+    if (salvo) return completarComExemplo(JSON.parse(salvo));
   } catch (e) { /* sem storage: usa o exemplo */ }
   return structuredClone(EXEMPLO);
+}
+
+// Coleções novas do exemplo entram em quem já tinha dados salvos, sem mexer nas marcações.
+// As que a pessoa removeu ficam em `removidas` para não voltarem.
+function completarComExemplo(salvo) {
+  for (const p of Object.keys(EXEMPLO)) {
+    salvo[p] = salvo[p] || [];
+    const removidas = salvo.removidas?.[p] || [];
+    for (const col of EXEMPLO[p]) {
+      // Edição, partes e nº de volumes seguem o exemplo; as marcações ficam.
+      const existente = salvo[p].find(c => c.id === col.id);
+      if (existente) {
+        existente.edicao = col.edicao;
+        existente.partes = col.partes.map((parte, i) => {
+          const antiga = existente.partes[i];
+          if (!antiga) return structuredClone(parte);
+          return { ...antiga, titulo: parte.titulo, volumes: parte.volumes, tem: antiga.tem.filter(v => v <= parte.volumes) };
+        });
+      }
+      if (!existente && !removidas.includes(col.id)) {
+        salvo[p].push(structuredClone(col));
+      }
+    }
+  }
+  return salvo;
 }
 
 function salvar() {
@@ -141,6 +180,8 @@ function renderCabecalho(col, minha) {
     rm.onclick = () => {
       if (!confirm(`Remover "${col.nome}" da sua estante?`)) return;
       dados[pessoa] = dados[pessoa].filter(c => c !== col);
+      dados.removidas = dados.removidas || {};
+      (dados.removidas[pessoa] = dados.removidas[pessoa] || []).push(col.id);
       salvar(); render();
     };
     acoes.appendChild(rm);
@@ -236,7 +277,7 @@ function renderPrateleira(col, parte, pi, minha) {
 
 function renderPresentes(col, minha) {
   const box = el('section', 'es-painel es-presentes');
-  box.appendChild(el('h2', 'es-titulo-secao', minha ? 'O que falta pra você' : `Dá pra dar de presente ${ARTIGO[pessoa]} ${NOMES[pessoa]}`));
+  box.appendChild(el('h2', 'es-titulo-secao', minha ? 'O que falta pra você' : 'Dar de presente'));
 
   const faltando = col.partes
     .map((p, i) => ({ p, i, vols: p.coleciona ? intervalo(p.volumes).filter(v => !p.tem.includes(v)) : [] }))
